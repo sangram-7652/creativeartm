@@ -5,6 +5,7 @@ $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $school = trim($_POST['school'] ?? '');
+    $contact = trim($_POST['contact'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
@@ -20,8 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-            $stmt = $conn->prepare("INSERT INTO users (school, email, password) VALUES (?, ?, ?)");
-            $stmt->bind_param("sss", $school, $email, $hashedPassword);
+            $stmt = $conn->prepare("INSERT INTO users (school, contact_number, email, password) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("ssss", $school, $contact, $email, $hashedPassword);
 
             if ($stmt->execute()) {
                 // Send welcome email
@@ -80,6 +81,7 @@ Creative Art Management Team
 
         <form action="signup.php" method="POST" class="space-y-4">
             <input type="text" name="school" placeholder="School/College Name" required class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-pink-400" />
+            <input type="text" name="contact" placeholder="Mobile No." required class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-pink-400" />
             <input type="email" name="email" placeholder="Email" required class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-pink-400" />
             <input type="password" name="password" placeholder="Password" required class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-pink-400" />
 

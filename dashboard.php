@@ -60,6 +60,7 @@ $classResult = $conn->query("SELECT DISTINCT class FROM id_cards WHERE school='"
                     <th class="px-4 py-2">Section</th>
                     <th class="px-4 py-2">DOB</th>
                     <th class="px-4 py-2">Contact</th>
+                    <th class="px-4 py-2">Address</th>
                     <th class="px-4 py-2">Actions</th>
                 </tr>
             </thead>
@@ -80,6 +81,7 @@ $classResult = $conn->query("SELECT DISTINCT class FROM id_cards WHERE school='"
                             <td><?= htmlspecialchars($row['section']) ?></td>
                             <td><?= htmlspecialchars($row['dob']) ?></td>
                             <td><?= htmlspecialchars($row['contact_no']) ?></td>
+                            <td><?= htmlspecialchars($row['address']) ?></td>
                             <td>
                                 <a href="edit.php?id=<?= $row['id'] ?>" class="text-blue-500">Edit</a> |
                                 <a href="dashboard.php?delete=<?= $row['id'] ?>" onclick="return confirm('Delete this student?')" class="text-red-500">Delete</a>

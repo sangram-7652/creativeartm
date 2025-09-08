@@ -1,29 +1,58 @@
 <?php
 require 'config/db.php';
-$message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email']);
-    $token = bin2hex(random_bytes(32));
+    $email = trim($_POST['email'] ?? '');
 
-    $stmt = $conn->prepare("UPDATE users SET reset_token = ? WHERE email = ?");
-    $stmt->bind_param("ss", $token, $email);
+    if (!$email) {
+        echo "<script>alert('❌ Email is required.'); window.location.href='forgot_password.php';</script>";
+        exit;
+    }
+
+    // Check if user exists
+    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 0) {
+        echo "<script>alert('❌ No user found with this email.'); window.location.href='forgot_password.php';</script>";
+        exit;
+    }
+
+    // Generate secure token
+    $token = bin2hex(random_bytes(32));
+    $expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+    // Save token and expiry to DB
+    $stmt = $conn->prepare("UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE email = ?");
+    $stmt->bind_param("sss", $token, $expiry, $email);
     $stmt->execute();
 
-    if ($stmt->affected_rows > 0) {
-        $link = "http://yourdomain.com/reset_password.php?token=" . $token;
+    // Send email with reset link
+    $resetLink = "https://creativeartm.com/reset_password.php?token=" . urlencode($token);
 
-        $subject = "Password Reset - Creative Art Management";
-        $msg = "Click the link to reset your password:\n\n$link";
-        $headers = "From: noreply@yourdomain.com";
+    $subject = "Reset Your Creative Art Password";
+    $message = "
+        Hi,<br><br>
+        Click the link below to reset your password:<br>
+        <a href='$resetLink'>$resetLink</a><br><br>
+        This link will expire in 1 hour.<br><br>
+        - Creative Art Team
+    ";
+    $headers = "MIME-Version: 1.0\r\n";
+    $headers .= "Content-type: text/html; charset=UTF-8\r\n";
+    $headers .= "From: Creative Art <no-reply@yourdomain.com>\r\n";
 
-        mail($email, $subject, $msg, $headers);
-        $message = "✅ Password reset link sent to your email.";
+    if (mail($email, $subject, $message, $headers)) {
+        echo "<script>alert('✅ Reset link sent to your email.'); window.location.href='login.php';</script>";
     } else {
-        $message = "❌ No account found with that email.";
+        echo "<script>alert('⚠️ Failed to send email.'); window.location.href='forgot_password.php';</script>";
     }
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
